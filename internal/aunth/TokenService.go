@@ -16,8 +16,8 @@ import (
 )
 
 type TokenService struct {
-	repository repository.TokenRepository
-	creator    ITokenCreator
+	*repository.TokenRepository
+	creator ITokenCreator
 }
 
 type TokenPair struct {
@@ -33,8 +33,8 @@ const (
 
 func NewTokenService(repo *repository.TokenRepository, creator ITokenCreator) *TokenService {
 	return &TokenService{
-		repository: *repo,
-		creator:    creator,
+		TokenRepository: repo,
+		creator:         creator,
 	}
 }
 
@@ -104,11 +104,11 @@ func (service *TokenService) storetoken(guid, refreshToken, accessId string) err
 	if err != nil {
 		return err
 	}
-	refreshModel, err := service.repository.CreateTokenByArgs(guid, hashedToken, accessId)
+	refreshModel, err := service.CreateTokenByArgs(guid, hashedToken, accessId)
 	if err != nil {
 		return err
 	}
-	err = service.repository.StoreToken(refreshModel)
+	err = service.StoreToken(refreshModel)
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func (service *TokenService) RefreshTokens(writer http.ResponseWriter, request *
 	}
 
 	//берем модель что храница в бд
-	tokenModel, err := service.repository.GetToken(userGuid)
+	tokenModel, err := service.GetToken(userGuid)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		return

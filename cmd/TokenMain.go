@@ -1,8 +1,7 @@
 package main
 
 import (
-	"GoAunth/internal/aunth"
-	"GoAunth/internal/repository"
+	"GoAunth/internal/handlers"
 	"log"
 	"net/http"
 	"os"
@@ -10,31 +9,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var rep *repository.TokenRepository
 var port string
-var secretkey string
 
 func init() {
-	var err error
 	port = os.Getenv("PORT")
-	secretkey = os.Getenv("SECRET_JWT_KEY")
-	rep, err = repository.InitializeDefaultRepository()
-	if err != nil {
-		panic("Repository initialize failed: " + err.Error())
-	}
 }
 
 func main() {
 	router := mux.NewRouter()
 
-	var expInMinutes = 5
-	var tokenCreator aunth.ITokenCreator
-	tokenCreator = aunth.NewTokenCreator(secretkey, expInMinutes)
-
-	tokenService := aunth.NewTokenService(rep, tokenCreator)
-
-	router.HandleFunc("/auth", tokenService.CreateTokens).Methods("POST")
-	router.HandleFunc("/auth/refresh", tokenService.RefreshTokens).Methods("POST")
+	handlers.Handler(router)
 
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
